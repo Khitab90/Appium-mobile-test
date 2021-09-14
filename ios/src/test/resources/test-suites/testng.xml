@@ -1,0 +1,14 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Sample Mobile Test Suite" parallel="classes">
+	<test name="Sample Mobile Test">
+		<packages>
+			<package name="com.example" />
+		</packages>
+		<classes>
+			<class name="com.example.android.SampleAndroidTest" />
+			<class name="com.example.ios.SampleIOSTest" />
+			<class name="com.example.mobile_web.SampleMobileTest" />
+		</classes>
+	</test>
+</suite>

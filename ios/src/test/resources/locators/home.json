@@ -1,0 +1,20 @@
+{
+	"search_button": {
+		"mobile": "xpath = //*[@aria-label='Search YouTube' and contains(@class, 'avatar-button')]",
+		"android": "xpath = //*[@content-desc = 'Search']",
+		"ios": "id = sample"
+	},
+	"search_text": {
+		"mobile": "name = search",
+		"android": "id = com.google.android.youtube:id/search_edit_text",
+		"ios": "id = sample"
+	},
+	"home_page_load": {
+		"mobile": "xpath = //*[@aria-label='Action menu']",
+		"android": "xpath = //*[contains(@resource-id, 'contextual_menu_anchor')]"
+	},
+	"search_page_load": {
+		"mobile": "xpath = //*[@aria-label='Action menu']",
+		"android": "xpath = //*[contains(@resource-id, 'text')]"
+	}
+}

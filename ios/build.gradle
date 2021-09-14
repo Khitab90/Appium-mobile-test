@@ -1,0 +1,100 @@
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "io.qameta.allure:allure-gradle:2.8.1"
+        classpath "io.franzbecker:gradle-lombok:4.0.0"
+    }
+}
+
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "idea"
+apply plugin: "maven"
+apply plugin: "io.qameta.allure"
+apply plugin: "io.franzbecker.gradle-lombok"
+
+repositories {
+    jcenter()
+}
+
+def jackson_version = "2.12.1"
+def allure_version = "2.13.8"
+
+allure {
+    autoconfigure = true
+    aspectjweaver = true
+    clean = true
+
+    version = "2.13.8"
+
+    resultsDir = file('test-output/allure-results')
+    reportDir = file('test-output/allure-reports')
+}
+
+dependencies {
+
+    implementation group: 'io.appium', name: 'java-client', version: '7.4.1'
+    implementation group: 'org.testng', name: 'testng', version: '7.1.0'
+    
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    implementation "ch.qos.logback:logback-classic:1.2.3"
+	
+    implementation "com.google.code.gson:gson:2.8.6"
+    implementation "com.google.guava:guava:28.2-jre"
+    implementation "org.rauschig:jarchivelib:1.0.0"
+    implementation "org.jsoup:jsoup:1.13.1"
+    implementation "org.apache.commons:commons-lang3:3.9"
+    implementation "commons-io:commons-io:2.6"
+    
+    implementation("io.qameta.allure:allure-testng:${allure_version}") {
+        exclude group: 'org.testng', module: 'testng'
+    }
+    
+    implementation "org.aspectj:aspectjweaver:1.9.4"
+    implementation "com.opencsv:opencsv:5.0"
+    implementation "org.apache.poi:poi-ooxml:4.1.0"
+    implementation 'org.awaitility:awaitility:4.0.3'
+    implementation "net.javacrumbs.json-unit:json-unit:2.18.1"
+    implementation "net.javacrumbs.json-unit:json-unit-fluent:2.18.1"
+    implementation "net.javacrumbs.json-unit:json-unit-assertj:2.18.1"
+    implementation "net.javacrumbs.json-unit:json-unit-json-path:2.18.1"
+	
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jackson_version}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jackson_version}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:${jackson_version}"
+    implementation "com.fasterxml.jackson.module:jackson-module-parameter-names:${jackson_version}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jackson_version}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jackson_version}"
+}
+
+task openAllureReport(type: Exec) {
+    def reportDir = file("${allure.reportDir}")
+    if ( reportDir.exists() ) {
+        def os = System.getProperty("os.name").toLowerCase()
+        if (os.contains("win")) {
+            commandLine 'cmd', '/c', "${projectDir}/.allure/allure-${allure_version}/bin/allure.bat", "open", reportDir
+        } else {
+           commandLine "${projectDir}/.allure/allure-${allure_version}/bin/allure", "open", reportDir
+        }
+    }
+}
+
+test {
+    useTestNG {
+	suites "src/test/resources/test-suites/${System.getProperty('suiteXmlFile', 'testng.xml')}"
+    }
+    afterTest { desc, result ->
+	println "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+    testLogging {
+	events "passed", "skipped", "failed"
+    }
+    testLogging.showStandardStreams = true
+    testLogging.showExceptions = true
+    systemProperty 'logback.statusListenerClass', 'ch.qos.logback.core.status.NopStatusListener'
+    systemProperties System.properties
+    finalizedBy 'downloadAllure', 'allureReport'
+}
